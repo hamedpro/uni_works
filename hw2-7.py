@@ -1,0 +1,1 @@
+print(sorted(list(map(lambda f :( f[1] +", " + f[0]),list(map(lambda x : x.split(" "),eval(input())))))))

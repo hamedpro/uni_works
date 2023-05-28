@@ -1,0 +1,1 @@
+print([ value  for key,value in enumerate(eval(input())) if key %3 != 0])
