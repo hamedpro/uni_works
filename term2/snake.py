@@ -1,9 +1,47 @@
 from tkinter import Canvas, Label, Tk
-from utils import dry_grow, calc_cordinates
 from random import choice
 
-
-class Snake:
+class Common:
+    def find_direction(self, cell1 , cell2):
+        if(cell1[0] != cell2[0] and cell1[1] != cell2[1]):
+            raise "these 2 passed cells can not create a sequence"
+        if cell1[0] == cell2[0]:
+            if cell1[1] > cell2[1]:
+                return "up"
+            else:
+                return "down"
+        else:
+            if cell1[0] < cell2[0]:
+                return "right"
+            else:
+                return "left"
+    def dry_grow(self, cells):
+        #it just returns a new cell in the end of snake tail
+        new_cell = [
+        ]
+        for i in range(2):
+            if cells[0][i] == cells[1][i]:
+                new_cell.append(cells[0][i]) 
+            else :
+                direction = self.find_direction(cells[0] , cells[1])
+                if(direction == "right" or direction == "down"):
+                    new_cell.append(min(cells[0][i], cells[1][i]) - 1)
+                else:
+                    new_cell.append(max(cells[0][i], cells[1][i])  + 1)
+        return new_cell
+    def calc_cordinates(self, cells):
+        tmp = []
+        for cell in cells:
+            tmp.append(
+                [
+                    20 * (cell[0] - 1),
+                    20 * (cell[1] - 1),
+                    20 * (cell[0]),
+                    20 * (cell[1]),
+                ]
+            )
+        return tmp 
+class Snake(Common):
     # array of tuples (x , y) (not like math)
     # top left is 1,1
     #  order is considered : last one is head
@@ -17,7 +55,7 @@ class Snake:
         self.score_up = score_up
 
     def grow(self):
-        self.cells.insert(0, dry_grow(self.cells))
+        self.cells.insert(0, self.dry_grow(self.cells))
         self.rerender_snake()
 
     def rerender_snake(self):
@@ -27,7 +65,7 @@ class Snake:
 
     @property
     def cords(self):
-        return calc_cordinates(self.cells)
+        return self.calc_cordinates(self.cells)
 
     def move(self):
         # direction is either up , down , left or right
@@ -58,7 +96,7 @@ class Snake:
             self.canvas.after(300, self.move)
 
 
-class Food:
+class Food(Common):
     def __init__(self, canvas):
         self.canvas = canvas
         self.rerender()
@@ -66,10 +104,10 @@ class Food:
     def rerender(self):
         self.canvas.delete("food")
         self.cords = [choice(list(range(1, 11))) for i in range(2)]
-        self.canvas.create_rectangle(*calc_cordinates([self.cords])[0], tag="food")
+        self.canvas.create_rectangle(*self.calc_cordinates([self.cords])[0], tag="food")
 
 
-class Game:
+class Game(Common):
     score = 0
 
     def createCanvas(self):
