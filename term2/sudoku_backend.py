@@ -14,8 +14,8 @@ def print_board(board):
                 print(str(board[i][j]) + " ", end="")
 
 def find_empty_position(board):
-    for i in range(len(board)):
-        for j in range(len(board[0])):
+    for i in range(9):
+        for j in range(9):
             if board[i][j] == 0:
                 return (i, j)
 
@@ -45,7 +45,14 @@ def is_Valid(board, position, number):
                 return False
 
     return True
-
+def validate_board(board):
+    #todo check this algo 
+    for i in range(9) :
+        for j in range(9 ) : 
+            if board[i][j] != 0 :
+                if not is_Valid(board , [i,j], board[i][j]):
+                    return False
+    return True 
 def solve_board(board):
     empty_position = find_empty_position(board)
 
@@ -88,4 +95,3 @@ def gen_random_board(number_of_empty_cells=30):
     
 
     return board
-            
