@@ -52,5 +52,3 @@ dataplot = sb.heatmap(correlation_matrix)
 #task 4 
 
 onehot_encoded = pd.get_dummies(df)
-def task4(k):
-    sklearn.cluster.KMeans(k).fit()

@@ -12,7 +12,6 @@ axis = plt.axes(xlim=(0, 4), ylim=(-2, 2))
 # initializing a line variable
 (line,) = axis.plot([], [], lw=3)
 
-
 # data which the line will
 # contain (x, y)
 def init():
@@ -27,7 +26,7 @@ def animate(i):
     y = np.sin(2 * np.pi * (x - 0.01 * i))
     line.set_data(x, y)
 
-    return (line,)
+    return [line]
 
 
 anim = FuncAnimation(fig, animate, init_func=init, frames=200, interval=20, blit=True)
