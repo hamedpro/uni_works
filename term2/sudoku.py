@@ -2,7 +2,7 @@ import tkinter
 import numpy as np
 from tkinter import filedialog
 import json
-
+import copy 
 
 # code is forked from : https://github.com/kubicodes/Backtracking-Sudoku-Solver-with-Python.git
 def print_board(board):
@@ -54,14 +54,9 @@ def is_Valid(board, position, number):
 
 
 def validate_board(board):
-    # todo check this algo
-    for i in range(9):
-        for j in range(9):
-            if board[i][j] != 0:
-                if not is_Valid(board, [i, j], board[i][j]):
-                    return False
-    return True
-
+    # returns true if board is solveable
+    clone = copy.deepcopy(board)
+    return solve_board(clone)
 
 def solve_board(board):
     empty_position = find_first_empty_position(board)
@@ -182,10 +177,11 @@ class GUI:
         self.labels_data = gen_random_board(self.radio_buttons_variable.get())
 
     def solve(self):
-        solve_board(self.labels_data)
+        clone = copy.deepcopy(self.labels_data)
+        solve_board(clone)
+        self.labels_data = clone 
 
     def check(self):
-        print(self.labels_data)
         if validate_board(self.labels_data) == True:
             tkinter.messagebox.showinfo(
                 title="board validation result", message="board is valid"
