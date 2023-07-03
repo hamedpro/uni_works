@@ -3,6 +3,7 @@ import numpy as np
 from tkinter import filedialog
 import json
 import copy 
+import math 
 
 # code is forked from : https://github.com/kubicodes/Backtracking-Sudoku-Solver-with-Python.git
 def print_board(board):
@@ -26,38 +27,58 @@ def find_first_empty_position(board):
                 return (i, j)
     return None
 
-
-def is_Valid(board, position, number):
-    # in that row and col and cube that position is located in there is not any
-    # other cell with number= that number we want to put in this position
-
+def is_valid(board):
     # check row
-    for i in range(len(board[0])):
-        if board[position[0]][i] == number and position[1] != i:
-            return False
+    for row in board :
+        for number in range(1,10):
+            if row.count(number ) > 1  :
+                return False 
 
     # check column
-    for i in range(len(board[0])):
-        if board[i][position[1]] == number and position[0] != i:
-            return False
+    for col_index  in range(9):
+        col = []
+        for row in board:
+            col.append(row[col_index])
+        if col.count(number )> 1:
+            return False 
+            
 
     # check cube
-    cube_x = position[1] // 3
-    cube_y = position[0] // 3
+    positions = [[0,0],[0,3],[0,6],[3,0],[3,3],[3,6],[6,0],[6,3],[6,6]]
 
-    for i in range(cube_y * 3, cube_y * 3 + 3):
-        for j in range(cube_x * 3, cube_x * 3 + 3):
-            if board[i][j] == number and (i, j) != position:
-                return False
+    for number in range(1,10):
+        for position in positions:
+            cube_x = position[1] // 3
+            cube_y = position[0] // 3
+            cube_cells = []
+            for i in range(cube_y * 3, cube_y * 3 + 3):
+                for j in range(cube_x * 3, cube_x * 3 + 3):
+                    cube_cells.append (board[i][j])
+            if cube_cells.count(number )> 1:
+                return False 
 
     return True
+def can_be_put(board, position, number):
+    # in that row and col and cube that position is located in there is not any
+    # other cell with number= that number we want to put in this position
+    t = copy.deepcopy(board)
+    t[position[0]][position[1]] = number 
+    return is_valid(t)
+    
 
 
 def validate_board(board):
     # returns true if board is solveable
+    if not is_valid(board ):
+        return False 
     clone = copy.deepcopy(board)
     return solve_board(clone)
-
+def calc_empty_percent(board):
+    cells = []
+    for row in range(9):
+        for col in range(9):
+            cells.append(board[row][col])
+    return round((cells.count(0) / 81 ) * 100 )
 def solve_board(board):
     empty_position = find_first_empty_position(board)
 
@@ -68,9 +89,8 @@ def solve_board(board):
         row, col = empty_position
 
     for i in range(1, 10):
-        if is_Valid(board, (row, col), i):
+        if can_be_put(board, (row, col), i):
             board[row][col] = i
-
             # backtrack and try again
             if solve_board(board):
                 return True
@@ -78,9 +98,8 @@ def solve_board(board):
 
     return False
 
-
 def gen_random_board(number_of_empty_cells=30):
-    board = [np.zeros(9) for i in range(9)]
+    board = [[0 for j in range(9)] for i in range(9)]
     board[np.random.randint(9)][np.random.randint(9)] = np.random.randint(1, 10)
     solve_board(board)
 
@@ -131,7 +150,7 @@ class GUI:
         self.labels = []
         for i in range(81):
             l = tkinter.Entry(
-                self.window, textvariable=self.entry_controlled_variables[i]
+                self.window, textvariable=self.entry_controlled_variables[i],width=3
             )
             cor = self.index_to_cordinates(i)
 
@@ -174,12 +193,17 @@ class GUI:
         self.labels_data = new_labels_data
 
     def create(self):
-        self.labels_data = gen_random_board(self.radio_buttons_variable.get())
+        t = gen_random_board(self.radio_buttons_variable.get())
+        self.labels_data = t 
 
     def solve(self):
         clone = copy.deepcopy(self.labels_data)
-        solve_board(clone)
-        self.labels_data = clone 
+        t = solve_board(clone)
+
+        if t == True :
+            self.labels_data = clone 
+        else :
+            tkinter.messagebox.showerror(title="board validation result" , message="this board is not solvable ")
 
     def check(self):
         if validate_board(self.labels_data) == True:
