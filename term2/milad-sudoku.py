@@ -1,11 +1,10 @@
 import tkinter as tk
 import copy
 import random
-
+from tkinter import filedialog
 
 class Sudoko_Gui:
     def __init__(self):
-        self.grid = [[0] * 9] * 9
         self.root = tk.Tk()
         self.root.title("sudoko_Game")
         self.root.geometry("550x550")
@@ -34,7 +33,7 @@ class Sudoko_Gui:
     @property
     def board(self):
         return [
-            [self.controlled_variables[row][col].get() for col in range(9)]
+            [int(float(self.controlled_variables[row][col].get())) for col in range(9)]
             for row in range(9)
         ]
 
@@ -51,7 +50,7 @@ class Sudoko_Gui:
         self.board = clone
 
     def load_button_onclick(self):
-        filename = tk.filedialog.askopenfilename()
+        filename = filedialog.askopenfilename()
         t = []
         for line in open(filename, "r"):
             t.append([int(i) for i in line.split(",")])
@@ -59,40 +58,79 @@ class Sudoko_Gui:
 
     def check_button_onclick(self):
         t = copy.deepcopy(self.board)
-        if self.solving_sudoku(t, 0, 0):
-            tk.messagebox.showinfo(
-                title="validation result", message="this board is valid"
-            )
+        if not self.is_valid(t):
+            tk.messagebox.showinfo(title ='check status ' , message = 'this board is not solvable')
         else:
-            tk.messagebox.showerror(
-                title="validation result", message="this board is invalid"
+            tk.messagebox.showinfo(
+                title="check status", message="this board is solvable"
             )
 
     def create_button_onclick(self):
         t = [[0 for i in range(9)] for j in range(9)]
-        rand_numbers = [random.randint(0,9) for i in range(3)]
-        print(rand_numbers)
-        t[rand_numbers[0]][rand_numbers[1]] = rand_numbers[2]
+        rand_numbers = [random.randint(0,8) for i in range(2)]
+        t[rand_numbers[0]][rand_numbers[1]] = random.randint(1,9)
         self.solving_sudoku(t, 0, 0)
-        cells_to_empty = [[random.randint(1, 10) for i in range(2)] for i in range(self.radio_button_state.get())]
-        #todo check if there is any duplication in cells_to_empty 
+        all_possible_cells = []
+        for i in range(9):
+            for j in range(9):
+                all_possible_cells.append([i,j])
+        
+        cells_to_empty = random.sample(all_possible_cells , int(float(self.radio_button_state.get())))
+        
+        for cell in cells_to_empty:
+            if(cells_to_empty.count(cell) > 1) :
+                raise RuntimeError('there is duplication in cells_to_empty. just run it again')
+        
         for cell in cells_to_empty :
             t[cell[0]][cell[1]] = 0
         self.board = t
-
-    def is_valid(self, grid, row, column, number):
-        if number in grid[row]:
-            return False
-        for x in range(9):
-            if grid[x][column] == number:
-                return False
-        row_corner = row - (row % 3)
-        column_corner = column - (column % 3)
-        for i in range(3):
-            for j in range(3):
-                if grid[row_corner + i][column_corner + j] == number:
+    def is_valid(self , board):
+        # check row
+        for row in board:
+            for number in range(1, 10):
+                if row.count(number) > 1:
                     return False
+
+        # check column
+        for col_index in range(9):
+            col = []
+            for row in board:
+                col.append(row[col_index])
+            if col.count(number) > 1:
+                return False
+
+        # check cube
+        positions = [
+            [0, 0],
+            [0, 3],
+            [0, 6],
+            [3, 0],
+            [3, 3],
+            [3, 6],
+            [6, 0],
+            [6, 3],
+            [6, 6],
+        ]
+
+        for number in range(1, 10):
+            for position in positions:
+                cube_x = position[1] // 3
+                cube_y = position[0] // 3
+                cube_cells = []
+                for i in range(cube_y * 3, cube_y * 3 + 3):
+                    for j in range(cube_x * 3, cube_x * 3 + 3):
+                        cube_cells.append(board[i][j])
+                if cube_cells.count(number) > 1:
+                    return False
+
         return True
+
+    def can_be_put(self , grid, position, number):
+        # in that row and col and cube that position is located in there is not any
+        # other cell with number= that number we want to put in this position
+        t = copy.deepcopy(grid)
+        t[position[0]][position[1]] = number
+        return self.is_valid(t)
 
     def solving_sudoku(self, grid, row, column):
         if column == 9:
@@ -105,7 +143,7 @@ class Sudoko_Gui:
             return self.solving_sudoku(grid, row, column + 1)
 
         for number in range(1, 10):
-            if self.is_valid(grid, row, column, number):
+            if self.can_be_put(grid,[ row, column], number):
                 grid[row][column] = number
 
                 if self.solving_sudoku(grid, row, column + 1):

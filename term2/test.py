@@ -7,29 +7,32 @@ from matplotlib.animation import FuncAnimation
 fig = plt.figure()
 
 # marking the x-axis and y-axis
-axis = plt.axes(xlim=(0, 4), ylim=(-2, 2))
-
+axis = plt.axes(xlim=(0, 400), ylim=(0,400))
+def gen_random_points(count,min=0,max=1000):
+    t = []
+    for i in range(count):
+        t.append([np.random.randint(min,max +1) for _ in range(2)])
+    return t 
+points = gen_random_points(300, 0,400)
+x_values = [point[0] for point in points ]
+y_values = [point[1] for point in points ]
 # initializing a line variable
-(line,) = axis.plot([], [], lw=3)
+(points_scatter,) = axis.plot(x_values, y_values)
 
 # data which the line will
 # contain (x, y)
 def init():
-    line.set_data([], [])
-    return (line,)
+    return (points_scatter,)
 
 
 def animate(i):
-    x = np.linspace(0, 4, 1000)
-
-    # plots a sine graph
-    y = np.sin(2 * np.pi * (x - 0.01 * i))
-    line.set_data(x, y)
-
-    return [line]
+    points = gen_random_points(300, 0,400)
+    x_values = [point[0] for point in points ]
+    y_values = [point[1] for point in points ]
+    points_scatter.set_data(x_values , y_values)
+    return [points_scatter]
 
 
 anim = FuncAnimation(fig, animate, init_func=init, frames=200, interval=20, blit=True)
 
-
-anim.save("continuousSineWave.mp4", writer="ffmpeg", fps=30)
+anim.save("./continuousSineWave.mp4", writer="ffmpeg", fps=30)
