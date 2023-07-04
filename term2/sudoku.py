@@ -5,9 +5,6 @@ import json
 import copy
 import math
 
-# code is forked from : https://github.com/kubicodes/Backtracking-Sudoku-Solver-with-Python.git
-
-
 class Sudoku:
     def find_first_empty_position(self , board):
         for i in range(9):
