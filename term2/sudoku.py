@@ -28,8 +28,9 @@ class Sudoku:
             col = []
             for row in board:
                 col.append(row[col_index])
-            if col.count(number) > 1:
-                return False
+            for number in range(1,10):
+                if col.count(number) > 1:
+                    return False
 
         # check cube
         positions = [
@@ -207,11 +208,11 @@ class Sudoku:
     def check(self):
         if self . validate_board(self.labels_data) == True:
             tkinter.messagebox.showinfo(
-                title="board validation result", message="board is valid"
+                title="board validation result", message="board is solvable"
             )
         else:
             tkinter.messagebox.showerror(
-                title="board validation result", message="board is invalid"
+                title="board validation result", message="board is not solvable"
             )
 
     def index_to_cordinates(self, index):
