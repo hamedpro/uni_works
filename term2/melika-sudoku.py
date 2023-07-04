@@ -3,7 +3,7 @@ from tkinter import *
 from tkinter import filedialog
 class Sudoku:
     def __init__(self, difficulty):
-        self.difficulty = difficulty
+        self.difficulty = difficulty #number of not empyt cells 
         self.grid = [[0 for _ in range(9)] for _ in range(9)]
         self.solved_grid = None
         self.generate()
@@ -27,7 +27,7 @@ class Sudoku:
         self.grid = new_grid
 
     def count_solutions(self, grid):
-        # check if the puzzle is already solved
+        # check whether this puzzle is solvable or not 
         for row in range(9):
             for col in range(9):
                 if grid[row][col] == 0:
@@ -41,7 +41,8 @@ class Sudoku:
         return 1
 
     def is_valid(self, grid, row, col, num):
-        # check if the number is valid in the row
+        # in that row and col and cube that position is located in there is not any
+        # other cell with number= that number we want to put in this position
         for i in range(9):
             if grid[row][i] == num:
                 return False
@@ -79,7 +80,7 @@ class Sudoku:
 
 class SudokuGUI:
     def __init__(self):
-        self.sudoku = Sudoku(30) # default difficulty is easy
+        self.sudoku = Sudoku(51) # default difficulty is easy : 81 -51 
         self.root = Tk()
         self.root.title("Sudoku")
         self.entries = []
@@ -172,5 +173,4 @@ class SudokuGUI:
     def show_message(self, message):
         messagebox.showinfo("Message", message)
 
-if __name__ == "__main__":
-    SudokuGUI()
+SudokuGUI()

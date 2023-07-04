@@ -8,7 +8,7 @@ import math
 # code is forked from : https://github.com/kubicodes/Backtracking-Sudoku-Solver-with-Python.git
 
 
-class GUI:
+class Sudoku:
     def find_first_empty_position(self , board):
         for i in range(9):
             for j in range(9):
@@ -80,7 +80,7 @@ class GUI:
 
     def solve_board(self , board):
         empty_position = self.find_first_empty_position(board)
-
+        
         # base case
         if not empty_position:
             return True
@@ -88,7 +88,7 @@ class GUI:
             row, col = empty_position
 
         for i in range(1, 10):
-            if self. can_be_put(board, (row, col), i):
+            if self.can_be_put(board, (row, col), i):
                 board[row][col] = i
                 # backtrack and try again
                 if self.solve_board(board):
@@ -218,4 +218,4 @@ class GUI:
         return [index // 9, index % 9]
 
 
-GUI()
+Sudoku()
