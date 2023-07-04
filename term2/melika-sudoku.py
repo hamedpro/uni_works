@@ -1,30 +1,41 @@
 import random
 from tkinter import *
 from tkinter import filedialog
-class Sudoku:
-    def __init__(self, difficulty):
-        self.difficulty = difficulty #number of not empyt cells 
-        self.grid = [[0 for _ in range(9)] for _ in range(9)]
-        self.solved_grid = None
-        self.generate()
+class SudokuBackend:
+    difficulty = 51 #it defaults to easy mode with 30 empty cells 
+    def print_board(self, board):
+        for i in range(len(board)):
+            if i % 3 == 0 and i != 0:
+                print("------------------------")
 
+            for j in range(len(board[0])):
+                if j % 3 == 0 and j != 0:
+                    print(" | ", end="")
+                if j == 8:
+                    print(board[i][j])
+                else:
+                    print(str(board[i][j]) + " ", end="")
+
+    def gen_empty_grid(self):
+        return [[0 for i in range(9)] for j in range(9)]
     def generate(self):
-        self.solve() # solve a complete sudoku puzzle
+        grid = self.gen_empty_grid()
+        grid[random.randint(0,8)][random.randint(0,8)] = random.randint(1,9)
+        self.solve(grid)
+
         count = 81 - self.difficulty
         while count > 0:
             row, col = random.randint(0, 8), random.randint(0, 8)
-            if self.grid[row][col] != 0:
-                backup = self.grid[row][col]
-                self.grid[row][col] = 0
-                copy_grid = [row[:] for row in self.grid]
+            if grid[row][col] != 0:
+                backup = grid[row][col]
+                grid[row][col] = 0
+                copy_grid = [row[:] for row in grid]
                 solutions = self.count_solutions(copy_grid)
                 if solutions != 1:
-                    self.grid[row][col] = backup
+                    grid[row][col] = backup
                 else:
                     count -= 1
-
-    def set_grid(self, new_grid):
-        self.grid = new_grid
+        return grid 
 
     def count_solutions(self, grid):
         # check whether this puzzle is solvable or not 
@@ -59,85 +70,96 @@ class Sudoku:
                     return False
         return True
 
-    def solve(self):
+    def solve(self,grid):
         # find an empty cell
         for row in range(9):
             for col in range(9):
-                if self.grid[row][col] == 0:
+                if grid[row][col] == 0:
                     # try values from 1 to 9
                     for num in range(1, 10):
-                        if self.is_valid(self.grid, row, col, num):
-                            self.grid[row][col] = num
+                        if self.is_valid(grid, row, col, num):
+                            grid[row][col] = num
                             # continue solving recursively
-                            if self.solve():
+                            if self.solve(grid):
                                 return True
-                            self.grid[row][col] = 0
+                            grid[row][col] = 0
                     # no valid value found
                     return False
-        # all cells are filled
-        self.solved_grid = [row[:] for row in self.grid]
         return True
 
 class SudokuGUI:
     def __init__(self):
-        self.sudoku = Sudoku(51) # default difficulty is easy : 81 -51 
+        self.sudoku = SudokuBackend() 
         self.root = Tk()
         self.root.title("Sudoku")
         self.entries = []
-        self.create_menu()
         self.create_grid()
-        self.create_solve_button()
-        self.create_solve_user_button()
+        self.grid = self.sudoku.gen_empty_grid()
+        self.create_bottom_buttons()
         self.root.mainloop()
-
-    def create_menu(self):
-        menubar = Menu(self.root)
-        self.root.config(menu=menubar)
-        filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label="Open", command=self.load_puzzle)
-        filemenu.add_separator()
-        filemenu.add_command(label="Exit", command=self.root.quit)
-        menubar.add_cascade(label="File", menu=filemenu)
-
-    def create_grid(self):
+    @property
+    def grid(self ):
+        t = self.sudoku.gen_empty_grid()
         for row in range(9):
-            row_entries = []
+            for col in range(9):
+                t[row][col] = int(float(self.entries[row][col].get() or 0 ))
+        return t 
+    @grid.setter
+    def grid(self,new_value ):
+        for row in range(9):
+            for col in range(9):
+                entry = self.entries[row][col]
+                entry.delete(0, END)
+                entry.insert(END, str(new_value[row][col]))
+
+    def create_bottom_buttons(self):
+        self.create_solve_button()
+        self.create_check_button()
+        self.create_create_button()
+        self.create_load_button()
+    def create_grid(self):
+        self.entries = [[None for i in range(9)] for j in range(9)]
+        for row in range(9):
             for col in range(9):
                 entry = Entry(self.root, width=2, font=("Arial", 20), justify=CENTER)
                 entry.grid(row=row, column=col, padx=2, pady=2)
-                if self.sudoku.grid[row][col] != 0:
-                    entry.insert(END, str(self.sudoku.grid[row][col]))
-                    entry.config(state=DISABLED)
-                row_entries.append(entry)
-            self.entries.append(row_entries)
+                self.entries[row][col] = entry
 
+    #functions to create those four buttons below 
     def create_solve_button(self):
         solve_button = Button(self.root, text="Solve", command=self.solve_puzzle)
         solve_button.grid(row=9, column=4, pady=10)
-
-    def create_solve_user_button(self):
+    def create_load_button(self):
+        load_button = Button(self.root , text="load a board" , command=self.load_puzzle)
+        load_button.grid(row = 9 , column = 7 )
+    def create_check_button(self):
         solve_button = Button(self.root, text="Check Solution", command=self.check_solution)
         solve_button.grid(row=9, column=5, pady=10)
+    def create_create_button(self):
+        create_button  = Button(self.root , text="create random grid" , command=self.create_button_onclick)
+        create_button.grid(row = 9 , column=  6)
 
+    #button onclick funcs 
+    def create_button_onclick(self):
+        self.grid = self.sudoku.generate()
+        
     def load_puzzle(self):
         filename = filedialog.askopenfilename()
+        if filename == "":
+            self.show_message("you did not select a file ")
+            return 
         with open(filename) as f:
             lines = f.readlines()
-        new_grid = [[int(char) for char in line.strip()] for line in lines]
-        self.sudoku.set_grid(new_grid)
-        self.update_grid()
-
+        new_grid = [[int(char) for char in line.split(',')] for line in lines]
+        self.grid = new_grid
+        
     def solve_puzzle(self):
-        self.sudoku.solve()
-        self.update_grid()
-
+        self.sudoku.solve(self.grid)
+        
     def check_solution(self):
-        user_grid = [[int(entry.get()) if entry.get() else 0 for entry in row] for row in self.entries]
+        user_grid = self.grid 
         if self.check_valid(user_grid):
-            if self.check_solution_helper(user_grid, self.sudoku.solved_grid):
-                self.show_message("Congratulations, you solved the puzzle!")
-            else:
-                self.show_message("Sorry, your solution is incorrect.")
+            self.show_message("Congratulations, you solved the puzzle!")
         else:
             self.show_message("Invalid input. Please check your entries.")
 
@@ -158,17 +180,7 @@ class SudokuGUI:
                 if grid1[row][col] != grid2[row][col]:
                     return False
         return True
-
-    def update_grid(self):
-        for row in range(9):
-            for col in range(9):
-                entry = self.entries[row][col]
-                entry.delete(0, END)
-                if self.sudoku.grid[row][col] != 0:
-                    entry.insert(END, str(self.sudoku.grid[row][col]))
-                    entry.config(state=DISABLED)
-                else:
-                    entry.config(state=NORMAL)
+        
 
     def show_message(self, message):
         messagebox.showinfo("Message", message)
