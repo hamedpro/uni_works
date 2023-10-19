@@ -228,4 +228,8 @@ class SudokuGUI:
     def show_message(self, message):
         messagebox.showinfo("Message", message)
 
-SudokuGUI()
+#SudokuGUI()
+
+a= SudokuBackend()
+t = a.gen_empty_grid()
+print(t )

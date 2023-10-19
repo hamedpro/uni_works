@@ -16,13 +16,15 @@ class Sudoko_Gui:
             for column in range(9):
                 tk.Entry(
                     self.root,
-                    width=4,
+                    width=1,
                     textvariable=self.controlled_variables[row][column],
                 ).grid(row=row, column=column)
+
         self.radio_button_state = tk.IntVar(self.root,30)
         tk.Radiobutton(self.root , value=30 , text="easy" , variable=self.radio_button_state).grid(row = 11,column= 1)
         tk.Radiobutton(self.root , value=40 , text="medium" , variable=self.radio_button_state).grid(row = 11,column= 2)
         tk.Radiobutton(self.root , value=50 , text="hard" , variable=self.radio_button_state).grid(row = 11,column= 3)
+
         tk.Button(self.root, text="load", command=self.load_button_onclick).grid(row = 10,column=1)
         tk.Button(self.root, text="check", command=self.check_button_onclick).grid(row = 10,column=2)
         tk.Button(self.root, text="solve ", command=self.solve_button_onclick).grid(row = 10,column=3)
@@ -42,6 +44,9 @@ class Sudoko_Gui:
         for i in range(9):
             for j in range(9):
                 self.controlled_variables[i][j].set(new_value[i][j])
+
+
+    
 
     def solve_button_onclick(self):
         clone = copy.deepcopy(self.board)
@@ -96,8 +101,9 @@ class Sudoko_Gui:
             col = []
             for row in board:
                 col.append(row[col_index])
-            if col.count(number) > 1:
-                return False
+            for number in range(1,10):
+                if col.count(number) > 1:
+                    return False
 
         # check cube
         positions = [
